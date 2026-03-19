@@ -1,0 +1,149 @@
+plugin: [ files ]
+
+provider: clab
+defaults.device: iol
+defaults.devices.iol.clab.image: iol:17.12.01
+defaults.devices.ioll2.clab.image: ioll2:iol-l2-17.12.01
+
+addressing:
+  mgmt:
+    ipv4: 192.168.200.0/24
+  p2p:
+    ipv4: 172.16.1.0/24
+    prefix: 30
+
+nodes: 
+  - name: sender
+    id: 10
+    config.inline: |
+      ip route 0.0.0.0 0.0.0.0 10.1.0.1
+  - name: r1
+    module: ['ospf']
+    id: 1
+    config.inline: |
+      no ip pim autorp
+      ip multicast-routing
+      !
+      interface Et0/1
+       ip pim dense-mode
+      !
+      interface Et0/2
+       ip pim dense-mode
+      !
+      interface Et0/3
+       ip pim dense-mode
+  - name: r2
+    module: ['ospf']
+    id: 2
+    config.inline: |
+      no ip pim autorp
+      ip multicast-routing
+      !
+      interface Et0/1
+       ip pim dense-mode
+      !
+      interface Et0/2
+       ip pim dense-mode
+      !
+      interface Et0/3
+       ip pim dense-mode
+      !
+  - name: r3
+    module: ['ospf']
+    id: 3
+    config.inline: |
+      no ip pim autorp
+      ip multicast-routing
+      !
+      interface Et0/1
+       ip pim dense-mode
+      !
+      interface Et0/2
+       ip pim dense-mode
+      !
+      interface Et0/3
+       ip pim dense-mode
+      !
+  - name: r4
+    module: ['ospf']
+    id: 4
+    config.inline: |
+      no ip pim autorp
+      ip multicast-routing
+      !
+      interface Et0/1
+       ip pim dense-mode
+      !
+      interface Et0/2
+       ip pim dense-mode
+      !
+      interface Et0/3
+       ip pim dense-mode
+      !
+  - name: r5
+    module: ['ospf']
+    id: 5
+    config.inline: |
+      no ip pim autorp
+      ip multicast-routing
+      !
+      interface Et0/1
+       ip pim dense-mode
+      !
+      interface Et0/2
+       ip pim dense-mode
+      !
+  - name: r6
+    module: ['ospf']
+    id: 6
+    config.inline: |
+      no ip pim autorp
+      ip multicast-routing
+      !
+      interface Et0/1
+       ip pim dense-mode
+      !
+      interface Et0/2
+       ip pim dense-mode
+      !
+  - name: s1
+    device: ioll2
+    role: bridge
+  - name: receiver_01
+    id: 11
+    config.inline: |
+      ip route 0.0.0.0 0.0.0.0 10.1.1.1
+  - name: receiver_02
+    id: 12
+    config.inline: |
+      ip route 0.0.0.0 0.0.0.0 10.1.2.1
+
+links:
+  - prefix: 10.1.0.0/24
+    sender:
+      ipv4: 10.1.0.10
+    r1:
+      ipv4: 10.1.0.1
+      ospf.passive: True
+  - prefix: 10.1.1.0/24
+    receiver_01:
+      ipv4: 10.1.1.11
+    r6:
+      ipv4: 10.1.1.1
+      ospf.passive: True
+  - prefix: 10.1.2.0/24
+    receiver_02:
+      ipv4: 10.1.2.11
+    r4:
+      ipv4: 10.1.2.1
+      ospf.passive: True
+  - r1-r2
+  - r1-r3
+  - r2-r4
+  - r3-r5
+  - r2-r3
+  - bridge: s1
+    prefix: 172.16.2.0/24
+    r4:
+    r5:
+    r6:

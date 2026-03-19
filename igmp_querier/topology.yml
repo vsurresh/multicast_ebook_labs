@@ -1,0 +1,83 @@
+plugin: [ files ]
+
+provider: clab
+defaults.device: iol
+defaults.devices.iol.clab.image: iol:17.12.01
+defaults.devices.ioll2.clab.image: ioll2:iol-l2-17.12.01
+
+addressing:
+  mgmt:
+    ipv4: 192.168.200.0/24
+  p2p:
+    ipv4: 172.16.1.0/24
+    prefix: 30
+
+gateway:
+  protocol: vrrp
+  id: 1
+
+nodes: 
+  - name: sender
+    config.inline: |
+      ip route 0.0.0.0 0.0.0.0 10.1.0.1
+  - name: r1
+    module: ['gateway']
+    id: 2
+    config.inline: |
+      no ip pim autorp
+      ip multicast-routing
+      !
+      interface Et0/1
+       ip pim dense-mode
+      !
+      interface Et0/2
+       ip pim dense-mode
+  - name: r2
+    module: ['gateway']
+    id: 3
+    config.inline: |
+      no ip pim autorp
+      ip multicast-routing
+      !
+      interface Et0/1
+       ip pim dense-mode
+      !
+      interface Et0/2
+       ip pim dense-mode
+  - name: s1
+    device: ioll2
+    role: bridge
+  - name: s2
+    device: ioll2
+    role: bridge
+  - name: receiver_01
+    config.inline: |
+      ip route 0.0.0.0 0.0.0.0 10.1.1.1
+  - name: receiver_02
+    config.inline: |
+      ip route 0.0.0.0 0.0.0.0 10.1.1.1
+  - name: host
+    config.inline: |
+      ip route 0.0.0.0 0.0.0.0 10.1.1.1
+
+links:
+  - bridge: s1
+    prefix: 10.1.0.0/24
+    sender:
+    r1:
+      gateway.vrrp.group: 1
+      gateway.vrrp.priority: 110
+    r2:
+      gateway.vrrp.group: 1
+      gateway.vrrp.priority: 100
+  - bridge: s1
+    prefix: 10.1.1.0/24
+    receiver_01:
+    receiver_02:
+    host:
+    r1:
+      gateway.vrrp.group: 2
+      gateway.vrrp.priority: 110
+    r2:
+      gateway.vrrp.group: 2
+      gateway.vrrp.priority: 100
